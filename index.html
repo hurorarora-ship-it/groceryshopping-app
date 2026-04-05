@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>어떻게든 해먹는다 🍳</title>
+<style>
+:root{--bg:#0f0f13;--sf:#1a1a22;--sf2:#22222e;--bd:#2e2e3e;--ac:#ff6b35;--ac2:#ffd166;--gr:#06d6a0;--bl:#118ab2;--tx:#f0ece4;--mu:#7a7a9a;--r:14px;--fn:'Noto Sans KR','Apple SD Gothic Neo',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--fn);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+/* Nav */
+#nav{display:flex;background:var(--sf);border-top:1px solid var(--bd);padding:6px 0 max(6px,env(safe-area-inset-bottom));flex-shrink:0;z-index:50}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border:none;background:none;color:var(--mu);font-size:10px;font-family:var(--fn);cursor:pointer;transition:color .2s;position:relative}
+.nb .ni{font-size:20px}
+.nb.active{color:var(--ac)}
+.cbdg{background:var(--ac);color:#fff;border-radius:99px;font-size:10px;font-weight:900;padding:1px 5px;position:absolute;top:-2px;right:8px}
+/* Content */
+#content{flex:1;overflow:hidden;position:relative}
+.sc{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column}
+.sc.active{display:flex}
+/* Header */
+.hdr{padding:14px 16px 0;flex-shrink:0}
+.hdr-title{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.hdr-sub{font-size:12px;color:var(--mu);margin-top:3px}
+/* Mode pill */
+.mp{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:12px;margin:12px 16px 0;padding:3px;gap:3px;flex-shrink:0}
+.mb{flex:1;padding:8px 6px;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:all .2s;background:none;color:var(--mu)}
+.mb.active{background:var(--ac);color:#fff}
+/* Search */
+.sb{display:flex;align-items:center;gap:8px;margin:10px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:0 14px;flex-shrink:0}
+.sb input{flex:1;background:none;border:none;padding:12px 0;color:var(--tx);font-size:15px;font-family:var(--fn);outline:none}
+.sb input::placeholder{color:var(--mu)}
+/* Chapter scroll */
+.cs{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;flex-shrink:0}
+.cs::-webkit-scrollbar{display:none}
+.cc{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:var(--fn)}
+/* Pick list - GRID */
+.pl{flex:1;overflow-y:auto;padding:0 16px 100px}
+/* Grid layout for browse mode */
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.menu-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px;cursor:pointer;transition:all .15s;position:relative;min-height:90px;display:flex;flex-direction:column;justify-content:space-between}
+.menu-card:active{transform:scale(.97)}
+.menu-card-top{flex:1}
+.menu-card-name{font-size:14px;font-weight:800;line-height:1.3;margin-bottom:4px}
+.menu-card-sub{font-size:10px;color:var(--mu);line-height:1.4}
+.menu-card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.ch-label{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
+.acb{width:30px;height:30px;border-radius:8px;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
+.acb.ic{background:var(--ac);color:#fff}
+.acb.nc{background:var(--sf2);color:var(--mu)}
+/* Ingredient results */
+.ih{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.ihh{padding:12px 14px 8px}
+.ihn{font-size:15px;font-weight:700}
+.ihg{font-size:11px;color:var(--ac2);margin-top:2px}
+.im{padding:0 10px 10px;display:flex;flex-direction:column;gap:6px}
+.imr{display:flex;align-items:center;gap:8px;background:var(--sf2);border-radius:10px;padding:8px 12px}
+.imrn{flex:1;font-size:14px;font-weight:600;cursor:pointer}
+.imrc{font-size:11px;color:var(--mu)}
+/* Cart float */
+#cf{position:fixed;bottom:calc(62px + max(6px,env(safe-area-inset-bottom)));right:16px;background:var(--ac);border:none;border-radius:50px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;font-weight:800;font-family:var(--fn);cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.4);transition:all .2s;z-index:40}
+#cf.hd{transform:translateY(100px);opacity:0;pointer-events:none}
+#cfc{background:#fff;color:var(--ac);border-radius:99px;font-size:12px;font-weight:900;padding:2px 8px}
+/* Steps */
+.steps{display:flex;align-items:center;padding:14px 16px;flex-shrink:0}
+.stn{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0}
+.stlb{font-size:12px;font-weight:700;margin-left:6px}
+.sl{flex:1;height:2px;background:var(--bd);margin:0 6px}
+.sl.dn{background:var(--gr)}
+/* Week mini */
+.wr{display:flex;gap:5px;padding:0 16px;margin-bottom:4px;flex-shrink:0}
+.wd{flex:1;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:7px 3px;text-align:center}
+.wd.has{border-color:var(--gr)}
+.wdl{font-size:10px;color:var(--mu)}
+.wdm{font-size:9px;font-weight:700;margin-top:3px;min-height:22px;color:var(--tx);line-height:1.3}
+/* Cart items */
+.cb2{flex:1;overflow-y:auto;padding:8px 16px 120px}
+.ci{display:flex;align-items:center;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;gap:10px}
+.ci.asgd{border-color:var(--gr)}
+.cib{flex:1;min-width:0}
+.cin{font-size:15px;font-weight:700}
+.cic{font-size:11px;color:var(--mu);margin-top:2px}
+.cid{font-size:12px;font-weight:700;color:var(--gr);margin-top:4px}
+.rb{width:28px;height:28px;border-radius:8px;border:none;background:var(--sf2);color:var(--mu);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ab{padding:6px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;white-space:nowrap}
+.ab.asgd{background:var(--gr);border-color:var(--gr);color:#000}
+/* Go shop bar */
+.gsb{position:fixed;bottom:calc(62px + max(6px,env(safe-area-inset-bottom)));left:0;right:0;padding:10px 16px;background:linear-gradient(transparent,var(--bg) 40%);pointer-events:none;z-index:30}
+.gsbt{width:100%;padding:14px;background:var(--ac);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:900;font-family:var(--fn);cursor:pointer;pointer-events:all;box-shadow:0 4px 16px rgba(255,107,53,.35)}
+.gsbt:disabled{background:var(--bd);color:var(--mu);box-shadow:none}
+/* Day picker */
+#dp{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:flex-end}
+#dp.show{display:flex}
+.dps{background:var(--sf2);border-radius:20px 20px 0 0;width:100%;padding:20px 16px max(20px,env(safe-area-inset-bottom))}
+.dpt{font-size:16px;font-weight:800;margin-bottom:16px;text-align:center}
+.dg{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dpb{padding:12px 4px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);font-size:13px;font-weight:700;font-family:var(--fn);cursor:pointer;text-align:center}
+.dpb.tk{opacity:.4}
+/* Shopping */
+.shop-wrap{padding:16px 16px 100px;flex:1;overflow-y:auto}
+.sct{font-size:11px;font-weight:800;color:var(--mu);letter-spacing:.8px;text-transform:uppercase;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
+.sct::after{content:'';flex:1;height:1px;background:var(--bd)}
+/* Shop item - checkbox style */
+.si{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--sf);border-radius:10px;margin-bottom:6px}
+.ck{width:22px;height:22px;border-radius:6px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px;margin-top:1px}
+.ck.dn{background:var(--gr);border-color:var(--gr)}
+.sn{font-size:14px;font-weight:600}
+.sn.dn{text-decoration:line-through;color:var(--mu)}
+.sn-au{font-size:11px;color:var(--ac2);margin-top:1px}
+.sm{font-size:11px;color:var(--mu);margin-top:2px}
+/* Exclude badge */
+.excl-badge{font-size:10px;color:var(--gr);background:#06d6a020;border:1px solid var(--gr)40;border-radius:6px;padding:1px 6px;margin-left:6px}
+/* Finish screen */
+#finish-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+#finish-screen.show{display:flex}
+.finish-emoji{font-size:80px;margin-bottom:20px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.15)}100%{transform:scale(1)}}
+.finish-title{font-size:26px;font-weight:900;margin-bottom:8px;text-align:center}
+.finish-sub{font-size:14px;color:var(--mu);text-align:center;margin-bottom:28px;line-height:1.7}
+.finish-date{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px 20px;font-size:13px;color:var(--mu);margin-bottom:24px;text-align:center}
+.finish-date strong{color:var(--tx);font-size:16px;display:block;margin-top:4px}
+/* More */
+.mts{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:3px;gap:3px;margin-bottom:16px;flex-shrink:0}
+.mt{flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;background:none;color:var(--mu)}
+.mt.active{background:var(--sf2);color:var(--tx)}
+.ms{display:none}
+.ms.active{display:block}
+/* History */
+.hist-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;cursor:pointer}
+.hist-date{font-size:13px;font-weight:800;color:var(--ac2)}
+.hist-menus{font-size:12px;color:var(--mu);margin-top:4px}
+.hist-count{font-size:11px;color:var(--mu);margin-top:4px}
+/* Shared */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:var(--fn);cursor:pointer;margin-bottom:8px}
+.btnp{background:var(--ac);color:#fff}
+.btns{background:var(--sf2);color:var(--tx);border:1px solid var(--bd)}
+.btng{background:var(--gr);color:#000}
+.inp{width:100%;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;color:var(--tx);font-size:14px;font-family:var(--fn);outline:none}
+.inp:focus{border-color:var(--ac)}
+textarea.inp{min-height:90px;resize:vertical}
+.lbl{font-size:12px;color:var(--mu);margin-bottom:5px}
+.ig{margin-bottom:10px}
+.fsa{border:2px dashed var(--bd);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;margin-bottom:14px}
+.dots{display:inline-flex;gap:4px}
+.dots span{width:6px;height:6px;background:var(--ac);border-radius:50%;animation:bop .7s infinite}
+.dots span:nth-child(2){animation-delay:.15s}
+.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.ytb{background:#0a1628;border:1px solid var(--bl);border-radius:12px;padding:14px;margin-top:10px;display:none}
+.ytb.show{display:block}
+.sr{background:var(--sf);border-radius:10px;padding:9px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+.sbar{height:4px;background:var(--bd);border-radius:2px;overflow:hidden;flex:1}
+.sfill{height:100%;border-radius:2px}
+/* Overlay */
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;overflow-y:auto;padding:20px 16px}
+#ov.show{display:block}
+.ovc{background:var(--sf2);border-radius:18px;padding:18px;max-width:480px;margin:0 auto}
+.ovt{font-size:20px;font-weight:900;margin-bottom:3px}
+.ovch{font-size:13px;color:var(--mu);margin-bottom:14px}
+.ovr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.ovr:last-of-type{border:none}
+.ovi{font-size:13px}
+.ovc3{font-size:10px;color:var(--mu);background:var(--sf);padding:2px 7px;border-radius:8px}
+.ova{font-size:13px;font-weight:700;color:var(--ac2)}
+.movr{background:#1a0e06;border-radius:9px;padding:8px 10px;margin:3px 0;display:flex;justify-content:space-between;align-items:center}
+.ovbs{display:flex;gap:8px;margin-top:14px}
+.ovb{flex:1;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:var(--fn);cursor:pointer}
+/* Info banner */
+.info-banner{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--mu);margin-bottom:12px;line-height:1.6}
+.info-banner strong{color:var(--tx)}
+/* Stock exclude toggle */
+.excl-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--sf2);border-radius:8px;margin-bottom:5px}
+.excl-name{font-size:13px}
+.excl-toggle{padding:4px 10px;border:1px solid var(--bd);border-radius:8px;background:none;color:var(--mu);font-size:11px;font-family:var(--fn);cursor:pointer}
+.excl-toggle.on{background:var(--gr)20;border-color:var(--gr);color:var(--gr)}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="content">
+
+<!-- PICK -->
+<div class="sc active" id="sc-pick">
+  <div class="hdr">
+    <div class="hdr-title">어떻게든 해먹는다 🍳</div>
+    <div class="hdr-sub">메뉴 골라서 + 누르면 장바구니에 담겨요</div>
+  </div>
+  <div class="mp">
+    <button class="mb active" id="mb-browse" onclick="setMode('browse')">📋 챕터별</button>
+    <button class="mb" id="mb-ingr" onclick="setMode('ingr')">🥕 재료로</button>
+  </div>
+  <div class="sb">
+    <span style="color:var(--mu);font-size:16px">🔍</span>
+    <input type="text" id="ps" placeholder="메뉴 검색..." oninput="onPS()">
+    <span id="psc" style="color:var(--mu);cursor:pointer;display:none" onclick="clearPS()">✕</span>
+  </div>
+  <div class="cs" id="cs"></div>
+  <div class="pl" id="pl"></div>
+</div>
+
+<!-- CART -->
+<div class="sc" id="sc-cart">
+  <div class="hdr"><div class="hdr-title">🛒 메뉴 선정</div><p id="cst" style="font-size:13px;color:var(--mu);margin-top:4px">메뉴를 담고 요일을 배정하세요 (선택사항)</p></div>
+  <div class="steps">
+    <div class="stn" style="background:var(--gr);color:#000">1</div>
+    <div class="stlb" style="color:var(--gr)">담기</div>
+    <div class="sl" id="sl1"></div>
+    <div class="stn" id="sn2" style="background:var(--bd);color:var(--mu)">2</div>
+    <div class="stlb" id="sl2" style="color:var(--mu)">요일배정</div>
+    <div class="sl" id="sl2l"></div>
+    <div class="stn" id="sn3" style="background:var(--bd);color:var(--mu)">3</div>
+    <div class="stlb" id="sl3" style="color:var(--mu)">장보기</div>
+  </div>
+  <div class="wr" id="wr"></div>
+  <div class="cb2" id="cb2">
+    <div id="ce" style="text-align:center;color:var(--mu);padding:40px 20px">
+      <div style="font-size:40px;margin-bottom:12px">🛒</div>
+      아직 담은 메뉴가 없어요<br>
+      <span style="font-size:13px">메뉴 찾기에서 + 버튼으로 담아보세요</span>
+    </div>
+  </div>
+  <div class="gsb"><button class="gsbt" id="gsbt" onclick="genShop()" disabled>🛍 장보기 목록 만들기</button></div>
+</div>
+
+<!-- SHOP -->
+<div class="sc" id="sc-shop">
+  <div class="shop-wrap" id="shop-wrap">
+    <div id="se" style="text-align:center;color:var(--mu);padding:50px 20px"><div style="font-size:40px;margin-bottom:12px">🛍</div>장보기 목록이 아직 없어요</div>
+    <div id="sl-list"></div>
+  </div>
+</div>
+
+<!-- MORE -->
+<div class="sc" id="sc-more" style="padding:16px">
+  <div class="hdr-title" style="margin-bottom:12px">⚙️ 더보기</div>
+  <div class="mts">
+    <button class="mt active" onclick="setMT('fridge',this)">🧊 냉장고</button>
+    <button class="mt" onclick="setMT('history',this)">📅 장보기 이력</button>
+    <button class="mt" onclick="setMT('add',this)">➕ 레시피</button>
+    <button class="mt" onclick="setMT('settings',this)">🔑 설정</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+    <div class="ms active" id="ms-fridge">
+      <div class="fsa" onclick="document.getElementById('fi').click()">
+        <div style="font-size:40px;margin-bottom:8px">📸</div>
+        <div style="font-size:15px;font-weight:700">냉장고 / 팬트리 사진</div>
+        <div style="font-size:13px;color:var(--mu);margin-top:5px">Claude가 재고를 분석합니다</div>
+      </div>
+      <input type="file" id="fi" accept="image/*" style="display:none" onchange="scanFridge(event)">
+      <div id="fscn" style="display:none;text-align:center;padding:20px"><div class="dots"><span></span><span></span><span></span></div><div style="margin-top:10px;color:var(--mu);font-size:13px">분석 중...</div></div>
+      <div id="fstk"></div>
+    </div>
+    <div class="ms" id="ms-history">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px">📅 장보기 이력</div>
+      <div id="hist-list"></div>
+    </div>
+    <div class="ms" id="ms-add">
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📺 유튜브 링크 자동 추출</div>
+        <div class="info-banner"><strong>API 키 필요</strong> — 설정 탭에서 먼저 입력하세요.<br>Anthropic Console(console.anthropic.com)에서 발급 가능합니다.</div>
+        <div class="ig"><input class="inp" type="url" id="ytu" placeholder="https://youtube.com/..."></div>
+        <button class="btn btns" onclick="extractYT()">분석하기</button>
+        <div class="ytb" id="ytb"></div>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:12px">✍️ 직접 입력</div>
+        <div class="ig"><div class="lbl">메뉴명</div><input class="inp" id="nn" placeholder="예: 된장찌개"></div>
+        <div class="ig">
+          <div class="lbl">챕터</div>
+          <select class="inp" id="nch"><option>밥</option><option>전/구이</option><option>메인-육류</option><option>메인-기타</option><option>면/파스타</option><option>떡볶이</option><option>국/탕/찌개</option><option>간식</option><option>죽/수프</option><option>기타</option></select>
+        </div>
+        <div class="ig"><div class="lbl">재료 (한 줄에 하나 · "재료명 계량")</div><textarea class="inp" id="ni" placeholder="계란 3개&#10;간장 2큰술"></textarea></div>
+        <button class="btn btnp" onclick="addRecipe()">추가</button>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📥 엑셀 다운로드</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:10px">현재 전체 레시피를 엑셀로 저장합니다</div>
+        <button class="btn btns" onclick="downloadExcel()">📊 레시피 전체 다운로드</button>
+      </div>
+    </div>
+    <div class="ms" id="ms-settings">
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">Claude API 키</div>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:10px">냉장고 스캔·유튜브 분석에 필요합니다.<br>console.anthropic.com → API Keys에서 발급</div>
+        <div class="ig"><input class="inp" type="password" id="aki" placeholder="sk-ant-api03-..."></div>
+        <button class="btn btns" onclick="saveKey()">저장</button>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📚 레시피 출처</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.8">
+          수록된 레시피의 상당수는<br>
+          <span style="color:var(--tx);font-weight:700">류수영 저 《79가지 평생 레시피》</span>를<br>
+          참고하여 개인 용도로 정리한 것입니다.<br><br>
+          일부 레시피는 각종 SNS 및<br>지인으로부터 얻은 정보를 바탕으로 합니다.<br><br>
+          <span style="font-size:11px;color:var(--mu)">본 앱은 개인 사용 목적으로 제작되었으며<br>상업적 용도로 사용되지 않습니다.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<nav id="nav">
+  <button class="nb active" onclick="goSC('pick',this)"><span class="ni">🍳</span>메뉴찾기</button>
+  <button class="nb" style="position:relative" onclick="goSC('cart',this)"><span class="ni">🛒</span>선정<span class="cbdg" id="cbdg" style="display:none">0</span></button>
+  <button class="nb" onclick="goSC('shop',this)"><span class="ni">🛍</span>장보기</button>
+  <button class="nb" onclick="goSC('more',this)"><span class="ni">⚙️</span>더보기</button>
+</nav>
+</div>
+
+<button id="cf" class="hd" onclick="goSC('cart',document.querySelectorAll('.nb')[1])">담은 메뉴 <span id="cfc">0</span></button>
+
+<div id="dp" onclick="closeDPicker(event)">
+  <div class="dps">
+    <div class="dpt" id="dpt">요일 선택</div>
+    <div class="dg" id="dg"></div>
+    <button class="btn btns" style="margin-top:12px" onclick="closeDPicker()">취소</button>
+  </div>
+</div>
+
+<div id="ov" onclick="closeOV(event)">
+  <div class="ovc" id="ovc"></div>
+</div>
+
+<!-- Finish screen -->
+<div id="finish-screen">
+  <div class="finish-emoji">🛒</div>
+  <div class="finish-title">장보기 완료!</div>
+  <div class="finish-sub">오늘도 어떻게든 해먹는다 🍳<br>구매 목록이 이력으로 저장됐어요</div>
+  <div class="finish-date" id="finish-date-display">
+    <span style="color:var(--mu)">저장된 날짜</span>
+    <strong id="finish-date-text"></strong>
+  </div>
+  <button class="btn btnp" style="width:240px" onclick="closeFinish()">홈으로 돌아가기</button>
+  <button class="btn btns" style="width:240px" onclick="resetAll()">새 장보기 시작</button>
+</div>
+
+<script>
+// ══ DATA ══════════════════════════════════════════════════
+const MG={'닭볶음탕용닭':{au:'Chicken Pieces (Bone-in)',st:'Woolworths / Coles'},'닭봉':{au:'Chicken Drumettes / Mid Wings',st:'Woolworths / Coles'},'껍질붙은통삽겹살':{au:'Pork Belly Skin-on Whole',st:'Coles Deli / Asian Butcher'},'돼지갈비':{au:'Pork Spare Ribs',st:'Woolworths / Coles'},'돼지고기 앞다리살':{au:'Pork Shoulder (Boneless)',st:'Woolworths / Coles'},'돼지등갈비':{au:'Pork Back Ribs / Baby Back Ribs',st:'Coles / Harris Farm'},'돼지등뼈':{au:'Pork Neck Bones / Spine',st:'Asian / Korean Butcher'},'삼겹살':{au:'Pork Belly Slices',st:'Asian Grocery / Coles'},'불고기용소고기':{au:'Beef Stir Fry Strips / Minute Steak',st:'Woolworths / Coles'},'소고기 양지':{au:'Beef Brisket (Point/Flat Cut)',st:'Woolworths / Coles'},'차돌박이':{au:'Beef Short Plate / Navel Brisket',st:'Korean Grocery / Asian Butcher'}};
+const CHS=['밥','전/구이','메인-육류','메인-기타','면/파스타','떡볶이','국/탕/찌개','간식','죽/수프','기타'];
+const CHC={'밥':'#e65100','전/구이':'#2e7d32','메인-육류':'#b71c1c','메인-기타':'#880e4f','면/파스타':'#1a237e','떡볶이':'#f57f17','국/탕/찌개':'#0d47a1','간식':'#6a1b9a','죽/수프':'#006064','기타':'#424242'};
+const DAYS=['월','화','수','목','금','토','일'];
+// Shop order: 채소 > 유제품 > 두부콩 > 육류 > 해산물 > 해조류 > 곡물 > 면 > 양념 > 조미료 > 가공식품 > 주류 > 기타
+const CAT_ORDER=['채소류','유제품','두부/콩류','육류','해산물','해조류','곡물류','면류','발효식품','양념/소스류','조미료/오일류','가공식품','주류','물/육수','기타'];
+const SKIP_CATS=['물/육수','기타'];
+
+const BASE_RECIPES = {"달걀 구름":{"chapter":"기타","ingredients":[{"name":"계란","category":"달걀류","amount":"2개"},{"name":"마요네즈","category":"양념/소스류","amount":"2큰술"},{"name":"설탕","category":"조미료/오일류","amount":"1/2큰술"},{"name":"식용유","category":"조미료/오일류","amount":"약간"}]},"달걀볶음밥":{"chapter":"밥","ingredients":[{"name":"다진마늘","category":"채소류","amount":"1/2큰술"},{"name":"대파","category":"채소류","amount":"1/2대"},{"name":"즉석밥","category":"곡물류","amount":"2개"},{"name":"계란","category":"달걀류","amount":"3개"},{"name":"설탕","category":"조미료/오일류","amount":"1큰술"},{"name":"멸치액젓","category":"양념/소스류","amount":"2큰술"},{"name":"소금","category":"조미료/오일류","amount":"1꼬집"}]},"매콤게살볶음밥":{"chapter":"밥","ingredients":[{"name":"즉석밥","category":"곡물류","amount":"1개"},{"name":"대파","category":"채소류","amount":"1/2대"},{"name":"게맛살","category":"가공식품","amount":"4개"},{"name":"고춧가루","category":"조미료/오일류","amount":"1큰술"},{"name":"케첩","category":"양념/소스류","amount":"1큰술"},{"name":"굴소스","category":"양념/소스류","amount":"1큰술"},{"name":"계란","category":"달걀류","amount":"2개"},{"name":"마요네즈","category":"양념/소스류","amount":"2큰술"},{"name":"설탕","category":"조미료/오일류","amount":"1/2큰술"}]},"달걀 덮밥":{"chapter":"밥","ingredients":[{"name":"계란","category":"달걀류","amount":"2개"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"간장","category":"양념/소스류","amount":"1큰술"},{"name":"참치액","category":"양념/소스류","amount":"1큰술"},{"name":"설탕","category":"조미료/오일류","amount":"1/2큰술"},{"name":"물","category":"물/육수","amount":"150g"},{"name":"즉석밥","category":"곡물류","amount":"1개"}]},"10분 리조토":{"chapter":"밥","ingredients":[{"name":"즉석밥","category":"곡물류","amount":"1개"},{"name":"양송이버섯","category":"채소류","amount":"3개"},{"name":"마늘","category":"채소류","amount":"2쪽"},{"name":"양파","category":"채소류","amount":"1/4개"},{"name":"슬라이스체더치즈","category":"유제품","amount":"1장"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"우유","category":"유제품","amount":"200ml"},{"name":"참치액","category":"양념/소스류","amount":"4/5큰술"},{"name":"계란노른자","category":"달걀류","amount":"1개"}]},"파에야":{"chapter":"밥","ingredients":[{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"마늘","category":"채소류","amount":"5쪽"},{"name":"오징어","category":"해산물","amount":"1마리"},{"name":"냉동새우","category":"해산물","amount":"10마리"},{"name":"페퍼론치노","category":"채소류","amount":"10개"},{"name":"홀토마토","category":"가공식품","amount":"400g 1캔"},{"name":"생쌀","category":"곡물류","amount":"1+1/2컵"},{"name":"물","category":"물/육수","amount":"1L"},{"name":"바질","category":"채소류","amount":"1줌"}]},"만원찜닭":{"chapter":"메인-육류","ingredients":[{"name":"닭볶음탕용닭","category":"육류","amount":"1kg"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"감자","category":"채소류","amount":"3개"},{"name":"당면","category":"면류","amount":"100g"},{"name":"베트남고추","category":"채소류","amount":"1줌"},{"name":"진간장","category":"양념/소스류","amount":"8큰술"},{"name":"짜장가루","category":"곡물류","amount":"2큰술"},{"name":"굴소스","category":"양념/소스류","amount":"2큰술"},{"name":"설탕","category":"조미료/오일류","amount":"3큰술"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"900ml"}]},"깻잎전":{"chapter":"전/구이","ingredients":[{"name":"깻잎","category":"채소류","amount":"10장"},{"name":"부침가루","category":"곡물류","amount":"1컵"},{"name":"찬물","category":"물/육수","amount":"1컵+2큰술"},{"name":"소금","category":"조미료/오일류","amount":"3꼬집"}]},"버터새우":{"chapter":"전/구이","ingredients":[{"name":"냉동새우","category":"해산물","amount":"400g"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"소금","category":"조미료/오일류","amount":"1/2작은술"},{"name":"마늘","category":"채소류","amount":"5쪽"},{"name":"파슬리가루","category":"채소류","amount":"약간"}]},"버터감바스":{"chapter":"전/구이","ingredients":[{"name":"냉동새우","category":"해산물","amount":"400g"},{"name":"방울토마토","category":"채소류","amount":"1공기"},{"name":"다진마늘","category":"채소류","amount":"3큰술"},{"name":"버터","category":"유제품","amount":"60g"},{"name":"페퍼론치노","category":"채소류","amount":"약간"},{"name":"소금","category":"조미료/오일류","amount":"1/2작은술"},{"name":"라면수프","category":"양념/소스류","amount":"1/2큰술"},{"name":"꿀","category":"조미료/오일류","amount":"약간"},{"name":"바게트빵","category":"가공식품","amount":"적당량"}]},"평생김밥":{"chapter":"밥","ingredients":[{"name":"흑미밥","category":"곡물류","amount":"5공기"},{"name":"당근","category":"채소류","amount":"3개"},{"name":"오이","category":"채소류","amount":"2개"},{"name":"불고기맛 햄","category":"가공식품","amount":"50g"},{"name":"게맛살","category":"가공식품","amount":"5줄"},{"name":"계란","category":"달걀류","amount":"7개"},{"name":"구운김","category":"해조류","amount":"5장"}]},"원 팬 등갈비":{"chapter":"메인-육류","ingredients":[{"name":"돼지등갈비","category":"육류","amount":"600g"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"진간장","category":"양념/소스류","amount":"4큰술"},{"name":"참치액","category":"양념/소스류","amount":"3큰술"},{"name":"갈아만든배","category":"양념/소스류","amount":"238ml 1캔"},{"name":"설탕","category":"조미료/오일류","amount":"4큰술"},{"name":"물","category":"물/육수","amount":"300ml"}]},"고추장버터등갈비":{"chapter":"메인-육류","ingredients":[{"name":"돼지등갈비","category":"육류","amount":"1kg"},{"name":"진간장","category":"양념/소스류","amount":"4큰술"},{"name":"설탕","category":"조미료/오일류","amount":"4큰술"},{"name":"고추장","category":"양념/소스류","amount":"4큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"2큰술"},{"name":"케첩","category":"양념/소스류","amount":"1큰술"},{"name":"버터","category":"유제품","amount":"20g"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"물","category":"물/육수","amount":"600ml"},{"name":"청양고추","category":"채소류","amount":"2개"}]},"긴급제육 119":{"chapter":"메인-육류","ingredients":[{"name":"삼겹살","category":"육류","amount":"300g"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"깻잎","category":"채소류","amount":"10장"},{"name":"설탕","category":"조미료/오일류","amount":"1+1/2큰술"},{"name":"간장","category":"양념/소스류","amount":"1큰술"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"},{"name":"참기름","category":"조미료/오일류","amount":"1큰술"}]},"평생제육볶음":{"chapter":"메인-육류","ingredients":[{"name":"돼지고기 앞다리살","category":"육류","amount":"600g"},{"name":"간장","category":"양념/소스류","amount":"3큰술"},{"name":"고추장","category":"양념/소스류","amount":"3큰술"},{"name":"다진마늘","category":"채소류","amount":"2큰술"},{"name":"갈아만든배","category":"양념/소스류","amount":"238ml 1캔"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"청양고추","category":"채소류","amount":"3개"}]},"만원닭볶음탕":{"chapter":"메인-육류","ingredients":[{"name":"닭볶음탕용닭","category":"육류","amount":"1마리"},{"name":"감자","category":"채소류","amount":"2개"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"청양고추","category":"채소류","amount":"4개"},{"name":"진간장","category":"양념/소스류","amount":"8큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"4큰술"},{"name":"설탕","category":"조미료/오일류","amount":"3큰술"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"쌈장","category":"양념/소스류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"800ml"}]},"만원갈비찜":{"chapter":"메인-육류","ingredients":[{"name":"돼지갈비","category":"육류","amount":"1kg"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"진간장","category":"양념/소스류","amount":"5큰술"},{"name":"참치액","category":"양념/소스류","amount":"5큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"3큰술"},{"name":"다진마늘","category":"채소류","amount":"3큰술"},{"name":"케첩","category":"양념/소스류","amount":"2큰술"},{"name":"물","category":"물/육수","amount":"500ml"},{"name":"청양고추","category":"채소류","amount":"2개"}]},"꽈리멸치치킨":{"chapter":"메인-육류","ingredients":[{"name":"닭볶음탕용닭","category":"육류","amount":"1kg"},{"name":"잔멸치","category":"해산물","amount":"1공기"},{"name":"꽈리고추","category":"채소류","amount":"200g"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"멸치액젓","category":"양념/소스류","amount":"1큰술"},{"name":"굴소스","category":"양념/소스류","amount":"1큰술"},{"name":"진간장","category":"양념/소스류","amount":"5큰술"},{"name":"물엿","category":"조미료/오일류","amount":"0.5컵"}]},"참간초면":{"chapter":"면/파스타","ingredients":[{"name":"건쌀국수","category":"면류","amount":"1인분"},{"name":"적양배추","category":"채소류","amount":"1줌"},{"name":"상추","category":"채소류","amount":"1줌"},{"name":"오이","category":"채소류","amount":"1/4개"},{"name":"양파","category":"채소류","amount":"1/4개"},{"name":"참기름","category":"조미료/오일류","amount":"3큰술"},{"name":"간장","category":"양념/소스류","amount":"3+1/2큰술"},{"name":"식초","category":"조미료/오일류","amount":"2큰술"}]},"어향가지":{"chapter":"메인-기타","ingredients":[{"name":"가지","category":"채소류","amount":"2개"},{"name":"감자전분","category":"곡물류","amount":"4큰술"},{"name":"생강","category":"채소류","amount":"1톨"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"청양고추","category":"채소류","amount":"4개"},{"name":"물엿","category":"조미료/오일류","amount":"6큰술"},{"name":"간장","category":"양념/소스류","amount":"2큰술"},{"name":"케첩","category":"양념/소스류","amount":"2큰술"}]},"무수분 마늘카레":{"chapter":"밥","ingredients":[{"name":"삼겹살","category":"육류","amount":"300g"},{"name":"고체카레","category":"곡물류","amount":"2조각"},{"name":"양배추","category":"채소류","amount":"1/4통"},{"name":"마늘","category":"채소류","amount":"1공기"},{"name":"간장","category":"양념/소스류","amount":"1큰술"},{"name":"미림","category":"양념/소스류","amount":"2큰술"},{"name":"물","category":"물/육수","amount":"1/2컵"},{"name":"청양고추","category":"채소류","amount":"1개"},{"name":"계란노른자","category":"달걀류","amount":"1개"}]},"평생 김치볶음밥":{"chapter":"밥","ingredients":[{"name":"익은 김치","category":"발효식품","amount":"1/4포기"},{"name":"김치국물","category":"발효식품","amount":"약간"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"멸치액젓","category":"양념/소스류","amount":"2큰술"},{"name":"밥","category":"곡물류","amount":"2공기"},{"name":"계란","category":"달걀류","amount":"3개"}]},"김치찜":{"chapter":"메인-육류","ingredients":[{"name":"신 김치","category":"발효식품","amount":"500g"},{"name":"김치국물","category":"발효식품","amount":"약간"},{"name":"돼지고기 앞다리살","category":"육류","amount":"500g"},{"name":"물","category":"물/육수","amount":"1L"},{"name":"새우젓","category":"발효식품","amount":"1큰술"},{"name":"대파 흰부분","category":"채소류","amount":"2-3대"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"멸치액젓","category":"양념/소스류","amount":"2큰술"},{"name":"간장","category":"양념/소스류","amount":"1큰술"}]},"갈비치킨":{"chapter":"메인-육류","ingredients":[{"name":"닭볶음탕용닭","category":"육류","amount":"10호 1마리"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"생강","category":"채소류","amount":"1톨"},{"name":"간장","category":"양념/소스류","amount":"3큰술"},{"name":"굴소스","category":"양념/소스류","amount":"1큰술"},{"name":"물엿","category":"조미료/오일류","amount":"6큰술"}]},"돈파육":{"chapter":"메인-육류","ingredients":[{"name":"돼지고기 앞다리살","category":"육류","amount":"1.3kg"},{"name":"대파","category":"채소류","amount":"1단"},{"name":"마늘","category":"채소류","amount":"10쪽"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"진간장","category":"양념/소스류","amount":"200ml"},{"name":"미림","category":"양념/소스류","amount":"1/2컵"},{"name":"청주","category":"주류","amount":"1/2컵"},{"name":"설탕","category":"조미료/오일류","amount":"5큰술"},{"name":"물","category":"물/육수","amount":"1.8L"}]},"원팬 카르보나라":{"chapter":"면/파스타","ingredients":[{"name":"파스타","category":"면류","amount":"160g"},{"name":"베이컨","category":"가공식품","amount":"4줄"},{"name":"계란","category":"달걀류","amount":"2개"},{"name":"계란노른자","category":"달걀류","amount":"1개"},{"name":"파마산치즈","category":"유제품","amount":"4큰술"},{"name":"생크림","category":"유제품","amount":"2큰술"},{"name":"마늘","category":"채소류","amount":"2쪽"},{"name":"버터","category":"유제품","amount":"1큰술"}]},"명란 버터 파스타":{"chapter":"면/파스타","ingredients":[{"name":"파스타","category":"면류","amount":"2인분"},{"name":"물","category":"물/육수","amount":"3L"},{"name":"명란젓","category":"발효식품","amount":"1개"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"마요네즈","category":"양념/소스류","amount":"2큰술"},{"name":"계란노른자","category":"달걀류","amount":"1개"}]},"스팸 덮밥":{"chapter":"밥","ingredients":[{"name":"밥","category":"곡물류","amount":"1공기"},{"name":"스팸","category":"가공식품","amount":"100g"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"간장","category":"양념/소스류","amount":"2큰술"},{"name":"계란노른자","category":"달걀류","amount":"1개"}]},"에그 전복죽":{"chapter":"죽/수프","ingredients":[{"name":"전복","category":"해산물","amount":"3마리"},{"name":"생쌀","category":"곡물류","amount":"2컵"},{"name":"까나리액젓","category":"양념/소스류","amount":"3큰술"},{"name":"물","category":"물/육수","amount":"2L"},{"name":"계란","category":"달걀류","amount":"4개"}]},"냄비바비큐":{"chapter":"메인-육류","ingredients":[{"name":"껍질붙은통삽겹살","category":"육류","amount":"600g"},{"name":"마늘","category":"채소류","amount":"1공기"},{"name":"꿀","category":"조미료/오일류","amount":"3큰술"},{"name":"소금","category":"조미료/오일류","amount":"1/2큰술"}]},"바싹불고기":{"chapter":"메인-육류","ingredients":[{"name":"불고기용소고기","category":"육류","amount":"600g"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"설탕","category":"조미료/오일류","amount":"2큰술"},{"name":"굴소스","category":"양념/소스류","amount":"1큰술"}]},"만원 반반치킨":{"chapter":"메인-육류","ingredients":[{"name":"닭봉","category":"육류","amount":"1kg"},{"name":"카레가루","category":"곡물류","amount":"7큰술"},{"name":"우유","category":"유제품","amount":"200ml"},{"name":"튀김가루","category":"곡물류","amount":"2컵"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"진간장","category":"양념/소스류","amount":"1큰술"},{"name":"케첩","category":"양념/소스류","amount":"2큰술"},{"name":"고추장","category":"양념/소스류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"100g"}]},"오징어회무침":{"chapter":"메인-기타","ingredients":[{"name":"냉동오징어","category":"해산물","amount":"2마리"},{"name":"무 초록부분","category":"채소류","amount":"1/2개"},{"name":"미나리","category":"채소류","amount":"1단"},{"name":"고춧가루","category":"조미료/오일류","amount":"4큰술"},{"name":"참기름","category":"조미료/오일류","amount":"4큰술"},{"name":"간장","category":"양념/소스류","amount":"3큰술"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"},{"name":"케첩","category":"양념/소스류","amount":"1큰술"},{"name":"까나리액젓","category":"양념/소스류","amount":"1큰술"}]},"원팬 토마토 버터파스타":{"chapter":"면/파스타","ingredients":[{"name":"홀토마토","category":"가공식품","amount":"400g"},{"name":"물","category":"물/육수","amount":"600ml"},{"name":"간장","category":"양념/소스류","amount":"1큰술"},{"name":"파스타","category":"면류","amount":"1인분"},{"name":"버터","category":"유제품","amount":"20g"},{"name":"마늘","category":"채소류","amount":"1쪽"}]},"차돌볶음파스타":{"chapter":"면/파스타","ingredients":[{"name":"파스타","category":"면류","amount":"2인분"},{"name":"차돌박이","category":"육류","amount":"100g"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"굴소스","category":"양념/소스류","amount":"2큰술"},{"name":"진간장","category":"양념/소스류","amount":"1큰술"},{"name":"다진마늘","category":"채소류","amount":"1/2큰술"},{"name":"깻잎","category":"채소류","amount":"5장"},{"name":"청양고추","category":"채소류","amount":"3개"},{"name":"물","category":"물/육수","amount":"3L"}]},"스팸케첩파스타":{"chapter":"면/파스타","ingredients":[{"name":"스팸","category":"가공식품","amount":"100g"},{"name":"파스타","category":"면류","amount":"1인분"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"간장","category":"양념/소스류","amount":"6큰술"},{"name":"케첩","category":"양념/소스류","amount":"5큰술"},{"name":"물","category":"물/육수","amount":"2L"}]},"원팬우유버터파스타":{"chapter":"면/파스타","ingredients":[{"name":"물","category":"물/육수","amount":"500ml"},{"name":"우유","category":"유제품","amount":"300ml"},{"name":"파스타","category":"면류","amount":"1인분"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"참치액","category":"양념/소스류","amount":"1큰술"},{"name":"마늘","category":"채소류","amount":"1쪽"}]},"원팬우유버터봉골레":{"chapter":"면/파스타","ingredients":[{"name":"바지락","category":"해산물","amount":"200g"},{"name":"천일염","category":"양념/소스류","amount":"3큰술"},{"name":"파스타","category":"면류","amount":"1인분"},{"name":"마늘","category":"채소류","amount":"1줌"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"미림","category":"양념/소스류","amount":"3큰술"},{"name":"멸치액젓","category":"양념/소스류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"500ml"},{"name":"우유","category":"유제품","amount":"300ml"},{"name":"슬라이스체더치즈","category":"유제품","amount":"1장"}]},"원팬까르보나라":{"chapter":"면/파스타","ingredients":[{"name":"물","category":"물/육수","amount":"700ml"},{"name":"파스타","category":"면류","amount":"1인분"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"올리브유","category":"조미료/오일류","amount":"3큰술"},{"name":"페퍼론치노","category":"채소류","amount":"3-4개"},{"name":"그라나파다노 치즈","category":"유제품","amount":"적당량"},{"name":"계란","category":"달걀류","amount":"1개"}]},"골뱅이소면":{"chapter":"면/파스타","ingredients":[{"name":"골뱅이캔","category":"가공식품","amount":"140g 1개"},{"name":"소면","category":"면류","amount":"1인분"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"오이","category":"채소류","amount":"1개"},{"name":"청양고추","category":"채소류","amount":"2개"},{"name":"황태채","category":"해산물","amount":"1줌"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"},{"name":"까나리액젓","category":"양념/소스류","amount":"1작은술"}]},"원팬삼겹잡채":{"chapter":"메인-육류","ingredients":[{"name":"알배추","category":"채소류","amount":"10장"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"당근","category":"채소류","amount":"1/2개"},{"name":"마늘","category":"채소류","amount":"10쪽"},{"name":"삼겹살","category":"육류","amount":"300g"},{"name":"당면","category":"면류","amount":"300g"},{"name":"간장","category":"양념/소스류","amount":"5큰술"},{"name":"설탕","category":"조미료/오일류","amount":"3큰술"},{"name":"물","category":"물/육수","amount":"100ml"}]},"분식집라볶이":{"chapter":"떡볶이","ingredients":[{"name":"진라면","category":"가공식품","amount":"1개"},{"name":"라면수프","category":"양념/소스류","amount":"1/2개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"사각어묵","category":"가공식품","amount":"2장"},{"name":"밀떡","category":"면류","amount":"적당량"},{"name":"물","category":"물/육수","amount":"700ml"},{"name":"간장","category":"양념/소스류","amount":"1큰술"},{"name":"고추장","category":"양념/소스류","amount":"1큰술"}]},"어묵국수":{"chapter":"면/파스타","ingredients":[{"name":"사각어묵","category":"가공식품","amount":"4장"},{"name":"소면","category":"면류","amount":"2인분"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"참치액","category":"양념/소스류","amount":"3큰술"},{"name":"물","category":"물/육수","amount":"1L"}]},"고추장비빔면+오이양파절임":{"chapter":"면/파스타","ingredients":[{"name":"중면","category":"면류","amount":"2인분"},{"name":"오이","category":"채소류","amount":"1개"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"고춧가루","category":"조미료/오일류","amount":"2큰술"},{"name":"참기름","category":"조미료/오일류","amount":"4큰술"},{"name":"간장","category":"양념/소스류","amount":"6큰술"},{"name":"고추장","category":"양념/소스류","amount":"1큰술"},{"name":"다진마늘","category":"채소류","amount":"1/2큰술"}]},"홍합탕":{"chapter":"국/탕/찌개","ingredients":[{"name":"홍합","category":"해산물","amount":"1kg"},{"name":"대파","category":"채소류","amount":"1/2대"},{"name":"청양고추","category":"채소류","amount":"1개"},{"name":"마늘","category":"채소류","amount":"2쪽"},{"name":"굵은소금","category":"양념/소스류","amount":"1/3큰술"}]},"한우양지미역국":{"chapter":"국/탕/찌개","ingredients":[{"name":"건미역","category":"해조류","amount":"50g"},{"name":"소고기 양지","category":"육류","amount":"650g"},{"name":"무 흰부분","category":"채소류","amount":"1/3개"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"다진마늘","category":"채소류","amount":"1/2큰술"},{"name":"까나리액젓","category":"양념/소스류","amount":"1큰술"},{"name":"국간장","category":"양념/소스류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"2L"}]},"감자탕":{"chapter":"국/탕/찌개","ingredients":[{"name":"돼지등뼈","category":"육류","amount":"2kg"},{"name":"얼갈이배추","category":"채소류","amount":"1단"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"감자","category":"채소류","amount":"3-4개"},{"name":"깻잎","category":"채소류","amount":"적당량"},{"name":"콩나물","category":"채소류","amount":"300g"},{"name":"된장","category":"양념/소스류","amount":"6큰술"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"},{"name":"다진마늘","category":"채소류","amount":"3큰술"},{"name":"다진생강","category":"채소류","amount":"1큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"4큰술"}]},"김치찌개":{"chapter":"국/탕/찌개","ingredients":[{"name":"김치","category":"발효식품","amount":"1/4포기"},{"name":"돼지고기 앞다리살","category":"육류","amount":"300g"},{"name":"김치국물","category":"발효식품","amount":"1/2컵"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"두부","category":"두부/콩류","amount":"1/2모"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"새우젓","category":"발효식품","amount":"1큰술"},{"name":"진간장","category":"양념/소스류","amount":"2큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"2큰술"},{"name":"물","category":"물/육수","amount":"1L"}]},"평생 된장찌개":{"chapter":"국/탕/찌개","ingredients":[{"name":"된장","category":"양념/소스류","amount":"3큰술"},{"name":"쌈장","category":"양념/소스류","amount":"1큰술"},{"name":"차돌박이","category":"육류","amount":"200g"},{"name":"감자","category":"채소류","amount":"1개"},{"name":"애호박","category":"채소류","amount":"1/3개"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"두부","category":"두부/콩류","amount":"1/2모"},{"name":"청양고추","category":"채소류","amount":"3개"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"1L"}]},"스팸순두부찌개":{"chapter":"국/탕/찌개","ingredients":[{"name":"스팸","category":"가공식품","amount":"200g 1캔"},{"name":"순두부","category":"두부/콩류","amount":"1개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"청양고추","category":"채소류","amount":"2개"},{"name":"애호박","category":"채소류","amount":"1/3개"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"계란","category":"달걀류","amount":"2개"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"고춧가루","category":"조미료/오일류","amount":"3큰술"},{"name":"간장","category":"양념/소스류","amount":"3큰술"},{"name":"굴소스","category":"양념/소스류","amount":"2큰술"},{"name":"물","category":"물/육수","amount":"300ml"}]},"고추장찌개":{"chapter":"국/탕/찌개","ingredients":[{"name":"삼겹살","category":"육류","amount":"300g"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"감자","category":"채소류","amount":"2개"},{"name":"양파","category":"채소류","amount":"1개"},{"name":"청양고추","category":"채소류","amount":"3개"},{"name":"애호박","category":"채소류","amount":"1/2개"},{"name":"두부","category":"두부/콩류","amount":"1모"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"간장","category":"양념/소스류","amount":"2큰술"},{"name":"멸치액젓","category":"양념/소스류","amount":"1큰술"},{"name":"새우젓","category":"발효식품","amount":"1큰술"},{"name":"고추장","category":"양념/소스류","amount":"4큰술"},{"name":"물","category":"물/육수","amount":"1L"}]},"황태해장국":{"chapter":"국/탕/찌개","ingredients":[{"name":"황태채","category":"해산물","amount":"50g"},{"name":"무 흰부분","category":"채소류","amount":"500g"},{"name":"두부","category":"두부/콩류","amount":"1/2모"},{"name":"콩나물","category":"채소류","amount":"200g"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"계란","category":"달걀류","amount":"2개"},{"name":"국간장","category":"양념/소스류","amount":"3큰술"},{"name":"참치액","category":"양념/소스류","amount":"3큰술"},{"name":"물","category":"물/육수","amount":"2L"}]},"평생육개장":{"chapter":"국/탕/찌개","ingredients":[{"name":"소고기 양지","category":"육류","amount":"400g"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"무","category":"채소류","amount":"500g"},{"name":"느타리버섯","category":"채소류","amount":"200g"},{"name":"콩나물","category":"채소류","amount":"300g"},{"name":"고춧가루","category":"조미료/오일류","amount":"5큰술"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"국간장","category":"양념/소스류","amount":"5큰술"},{"name":"참치액","category":"양념/소스류","amount":"4큰술"},{"name":"물","category":"물/육수","amount":"2L"}]},"즉석떡볶이":{"chapter":"떡볶이","ingredients":[{"name":"계란","category":"달걀류","amount":"4개"},{"name":"양배추","category":"채소류","amount":"1/4통"},{"name":"밀떡","category":"면류","amount":"적당량"},{"name":"사각어묵","category":"가공식품","amount":"3장"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"짜파게티 수프","category":"가공식품","amount":"1개"},{"name":"라면사리","category":"면류","amount":"1개"},{"name":"쫄면사리","category":"면류","amount":"2묶음"},{"name":"고추장","category":"양념/소스류","amount":"1+1/2큰술"},{"name":"물","category":"물/육수","amount":"1L"}]},"평생떡볶이":{"chapter":"떡볶이","ingredients":[{"name":"밀떡","category":"면류","amount":"500g"},{"name":"사각어묵","category":"가공식품","amount":"4장"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"물","category":"물/육수","amount":"600ml"},{"name":"고춧가루","category":"조미료/오일류","amount":"4큰술"},{"name":"간장","category":"양념/소스류","amount":"2큰술"},{"name":"굴소스","category":"양념/소스류","amount":"2큰술"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"}]},"짜장떡볶이":{"chapter":"떡볶이","ingredients":[{"name":"밀떡","category":"면류","amount":"300g"},{"name":"차돌박이","category":"육류","amount":"100g"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"짜장가루","category":"곡물류","amount":"2+1/2큰술"},{"name":"굴소스","category":"양념/소스류","amount":"1큰술"},{"name":"물","category":"물/육수","amount":"400ml"}]},"궁중떡볶이":{"chapter":"떡볶이","ingredients":[{"name":"불고기용소고기","category":"육류","amount":"200g"},{"name":"쌀떡","category":"면류","amount":"500g"},{"name":"대파","category":"채소류","amount":"2대"},{"name":"진간장","category":"양념/소스류","amount":"6큰술"},{"name":"굴소스","category":"양념/소스류","amount":"2큰술"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"갈아만든배","category":"양념/소스류","amount":"238ml"},{"name":"물","category":"물/육수","amount":"100ml"}]},"휴게소 버터감자":{"chapter":"간식","ingredients":[{"name":"감자","category":"채소류","amount":"5-6개"},{"name":"물","category":"물/육수","amount":"200ml"},{"name":"버터","category":"유제품","amount":"40g"}]},"크레이지 고구마":{"chapter":"간식","ingredients":[{"name":"고구마","category":"채소류","amount":"3-4개"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"슈레드 피자치즈","category":"유제품","amount":"2줌"},{"name":"바닐라아이스크림","category":"유제품","amount":"적당량"},{"name":"꿀","category":"조미료/오일류","amount":"약간"}]},"달걀 샌드위치":{"chapter":"간식","ingredients":[{"name":"모닝빵","category":"가공식품","amount":"5개"},{"name":"계란","category":"달걀류","amount":"4개"},{"name":"게맛살","category":"가공식품","amount":"4개"},{"name":"오이","category":"채소류","amount":"1/2개"},{"name":"양파","category":"채소류","amount":"1/4개"},{"name":"마요네즈","category":"양념/소스류","amount":"4큰술"},{"name":"슬라이스체더치즈","category":"유제품","amount":"1장"}]},"콘치즈":{"chapter":"간식","ingredients":[{"name":"통조림 옥수수","category":"채소류","amount":"340g"},{"name":"마요네즈","category":"양념/소스류","amount":"2큰술"},{"name":"다진마늘","category":"채소류","amount":"1/2큰술"},{"name":"슈레드 피자치즈","category":"유제품","amount":"적당량"}]},"꿀새우피자":{"chapter":"간식","ingredients":[{"name":"토르티야","category":"가공식품","amount":"1장"},{"name":"냉동새우","category":"해산물","amount":"6마리"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"다진마늘","category":"채소류","amount":"1큰술"},{"name":"방울토마토","category":"채소류","amount":"6-8개"},{"name":"슈레드 피자치즈","category":"유제품","amount":"적당량"},{"name":"꿀","category":"조미료/오일류","amount":"적당량"}]},"한판굴전":{"chapter":"간식","ingredients":[{"name":"굴","category":"해산물","amount":"200g"},{"name":"계란","category":"달걀류","amount":"4개"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"청양고추","category":"채소류","amount":"2-3개"},{"name":"부침가루","category":"곡물류","amount":"1큰술"}]},"한판 떡고치":{"chapter":"간식","ingredients":[{"name":"밀떡","category":"면류","amount":"2줌"},{"name":"대파 흰부분","category":"채소류","amount":"1/2대"},{"name":"밀가루","category":"곡물류","amount":"3큰술"},{"name":"물","category":"물/육수","amount":"120ml"},{"name":"케첩","category":"양념/소스류","amount":"3큰술"},{"name":"고추장","category":"양념/소스류","amount":"2큰술"}]},"크림치즈연어샌드위치":{"chapter":"간식","ingredients":[{"name":"쪽파","category":"채소류","amount":"10대"},{"name":"크림치즈","category":"유제품","amount":"200g"},{"name":"바게트 50cm","category":"가공식품","amount":"1개"},{"name":"훈제연어","category":"해산물","amount":"적당량"},{"name":"루콜라","category":"채소류","amount":"1줌"},{"name":"양파","category":"채소류","amount":"1/2개"},{"name":"레몬","category":"채소류","amount":"1/4개"}]},"길거리토스트":{"chapter":"간식","ingredients":[{"name":"마가린","category":"유제품","amount":"적당량"},{"name":"식빵","category":"가공식품","amount":"2장"},{"name":"양배추","category":"채소류","amount":"1줌"},{"name":"당근","category":"채소류","amount":"1/2줌"},{"name":"계란","category":"달걀류","amount":"1개"},{"name":"케첩","category":"양념/소스류","amount":"약간"}]},"치즈퐁뒤":{"chapter":"간식","ingredients":[{"name":"브로콜리","category":"채소류","amount":"1개"},{"name":"양송이버섯","category":"채소류","amount":"8개"},{"name":"감자","category":"채소류","amount":"3개"},{"name":"소시지","category":"가공식품","amount":"4개"},{"name":"마늘","category":"채소류","amount":"1쪽"},{"name":"화이트와인","category":"주류","amount":"100ml"},{"name":"그뤼에르치즈","category":"유제품","amount":"200g"},{"name":"에멘탈치즈","category":"유제품","amount":"100g"}]},"기름떡볶이":{"chapter":"떡볶이","ingredients":[{"name":"밀떡","category":"면류","amount":"1인분"},{"name":"대파","category":"채소류","amount":"1대"},{"name":"소시지","category":"가공식품","amount":"10-13개"},{"name":"냉동새우","category":"해산물","amount":"15마리"},{"name":"고추장","category":"양념/소스류","amount":"1큰술"},{"name":"케첩","category":"양념/소스류","amount":"2큰술"},{"name":"다진마늘","category":"채소류","amount":"1/2큰술"},{"name":"우유","category":"유제품","amount":"50ml"},{"name":"마요네즈","category":"양념/소스류","amount":"200g"},{"name":"꿀","category":"조미료/오일류","amount":"1큰술"}]},"만두피추로스":{"chapter":"간식","ingredients":[{"name":"왕만두피","category":"가공식품","amount":"5장"},{"name":"설탕","category":"조미료/오일류","amount":"5큰술"},{"name":"시나몬파우더","category":"조미료/오일류","amount":"1큰술"}]},"프렌치토스트":{"chapter":"간식","ingredients":[{"name":"계란","category":"달걀류","amount":"5개"},{"name":"바닐라아이스크림","category":"유제품","amount":"6큰술"},{"name":"식빵","category":"가공식품","amount":"4장"},{"name":"버터","category":"유제품","amount":"40g"},{"name":"바나나","category":"채소류","amount":"2개"},{"name":"설탕","category":"조미료/오일류","amount":"2큰술"}]},"사과치즈빵":{"chapter":"간식","ingredients":[{"name":"모닝빵","category":"가공식품","amount":"5개"},{"name":"사과잼","category":"채소류","amount":"5큰술"},{"name":"브리치즈","category":"유제품","amount":"1개"},{"name":"시나몬파우더","category":"조미료/오일류","amount":"1/2작은술"}]},"감자수프":{"chapter":"죽/수프","ingredients":[{"name":"감자","category":"채소류","amount":"3개"},{"name":"버터","category":"유제품","amount":"60g"},{"name":"대파 흰부분","category":"채소류","amount":"1대"},{"name":"물","category":"물/육수","amount":"300ml"},{"name":"우유","category":"유제품","amount":"300ml"},{"name":"슬라이스체더치즈","category":"유제품","amount":"3장"}]},"호박감자수프":{"chapter":"죽/수프","ingredients":[{"name":"버터","category":"유제품","amount":"60g"},{"name":"감자","category":"채소류","amount":"3개"},{"name":"물","category":"물/육수","amount":"300ml"},{"name":"애호박","category":"채소류","amount":"1/2개"},{"name":"우유","category":"유제품","amount":"300ml"},{"name":"대파 흰부분","category":"채소류","amount":"1대"},{"name":"슬라이스체더치즈","category":"유제품","amount":"3장"}]},"당근수프":{"chapter":"죽/수프","ingredients":[{"name":"당근","category":"채소류","amount":"3개"},{"name":"양파","category":"채소류","amount":"2개"},{"name":"버터","category":"유제품","amount":"60g"},{"name":"물","category":"물/육수","amount":"500ml"},{"name":"밥","category":"곡물류","amount":"1/2공기"},{"name":"생크림","category":"유제품","amount":"1/2컵"}]},"새우타파스":{"chapter":"간식","ingredients":[{"name":"냉동새우","category":"해산물","amount":"300g"},{"name":"버터","category":"유제품","amount":"20g"},{"name":"다진마늘","category":"채소류","amount":"2+1/2큰술"},{"name":"핫소스","category":"양념/소스류","amount":"1큰술"},{"name":"마요네즈","category":"양념/소스류","amount":"6큰술"},{"name":"왕만두피","category":"가공식품","amount":"10장"},{"name":"상추","category":"채소류","amount":"4장"},{"name":"방울토마토","category":"채소류","amount":"5개"},{"name":"레몬","category":"채소류","amount":"1개"}]}};
+
+// ══ STATE ══════════════════════════════════════════════════
+let recipes = JSON.parse(localStorage.getItem('recipes_extra') || '{}');
+// Merge base + extra (extra takes precedence for same key)
+Object.assign(recipes, BASE_RECIPES);
+// Actually: base is canonical, extra are additions
+recipes = {...BASE_RECIPES, ...JSON.parse(localStorage.getItem('recipes_extra') || '{}')};
+
+let cart=[],weekAssign={},shopChecked={},fridgeStock={},excludeFromShop={},shopHistory=[],apiKey=localStorage.getItem('ck_api')||'',pickMode='browse',activeCH=null,pendingMenu=null;
+
+// Load history
+try { shopHistory = JSON.parse(localStorage.getItem('shop_history')||'[]'); } catch(e){}
+// Load fridge stock
+try { fridgeStock = JSON.parse(localStorage.getItem('fridge_stock')||'{}'); } catch(e){}
+
+// ══ HELPERS ════════════════════════════════════════════════
+function saveExtras(){
+  const extras = {};
+  Object.keys(recipes).forEach(k=>{ if(!BASE_RECIPES[k]) extras[k]=recipes[k]; });
+  localStorage.setItem('recipes_extra', JSON.stringify(extras));
+}
+function saveFridge(){ localStorage.setItem('fridge_stock', JSON.stringify(fridgeStock)); }
+
+// Sort recipes: by chapter order, then within chapter by addition order
+function getSortedNames(filterFn){
+  const names = Object.keys(recipes).filter(filterFn||Boolean);
+  names.sort((a,b)=>{
+    const ci = ch => CHS.indexOf(recipes[ch]?.chapter);
+    const ca = ci(a), cb2 = ci(b);
+    if(ca!==cb2) return ca-cb2;
+    // within same chapter, base recipes first in original order
+    const ba = Object.keys(BASE_RECIPES).indexOf(a);
+    const bb = Object.keys(BASE_RECIPES).indexOf(b);
+    if(ba>=0 && bb>=0) return ba-bb;
+    if(ba>=0) return -1;
+    if(bb>=0) return 1;
+    return 0;
+  });
+  return names;
+}
+
+// ══ NAV ════════════════════════════════════════════════════
+function goSC(id,btn){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='cart') renderCart();
+  if(id==='more') renderHistory();
+  const isCart = id==='cart';
+  document.getElementById('cf').classList.toggle('hd', cart.length===0||isCart);
+}
+
+// ══ PICK MODE ══════════════════════════════════════════════
+function setMode(m){
+  pickMode=m;
+  document.getElementById('mb-browse').classList.toggle('active',m==='browse');
+  document.getElementById('mb-ingr').classList.toggle('active',m==='ingr');
+  document.getElementById('cs').style.display=m==='browse'?'flex':'none';
+  document.getElementById('ps').placeholder=m==='browse'?'메뉴 검색...':'재료명 입력 (예: 삼겹살, 계란...)';
+  document.getElementById('ps').value='';
+  document.getElementById('psc').style.display='none';
+  activeCH=null; renderCH(); renderPL();
+}
+function onPS(){const v=document.getElementById('ps').value;document.getElementById('psc').style.display=v?'inline':'none';renderPL();}
+function clearPS(){document.getElementById('ps').value='';document.getElementById('psc').style.display='none';renderPL();}
+
+function renderCH(){
+  const el=document.getElementById('cs');
+  el.innerHTML=['전체',...CHS].map(ch=>{
+    const act=ch==='전체'?!activeCH:activeCH===ch;
+    const col=CHC[ch]||'#555';
+    return`<button class="cc" style="background:${act?col:'var(--sf)'};color:${act?'#fff':col};border:1.5px solid ${col}40" onclick="fCH('${ch}')">${ch}</button>`;
+  }).join('');
+}
+function fCH(ch){activeCH=ch==='전체'?null:ch;renderCH();renderPL();}
+
+// ── GRID browse ──
+function renderPL(){
+  const q=document.getElementById('ps').value.trim().toLowerCase();
+  const el=document.getElementById('pl');
+  if(pickMode==='ingr'){renderIL(q,el);return;}
+  const names=getSortedNames(n=>{
+    const r=recipes[n];
+    if(activeCH&&r.chapter!==activeCH) return false;
+    if(q&&!n.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if(!names.length){el.innerHTML='<div style="text-align:center;color:var(--mu);padding:30px">검색 결과 없음</div>';return;}
+  el.innerHTML=`<div class="menu-grid">${names.map(name=>{
+    const r=recipes[name];
+    const ic=cart.some(c=>c.name===name);
+    const col=CHC[r.chapter]||'#555';
+    const hm=r.ingredients.some(i=>i.category==='육류');
+    const hasLow=fridgeStock[name]===1; // not right - check ingredients
+    const lowIngrs=r.ingredients.filter(i=>fridgeStock[i.name]===1).length>0;
+    return`<div class="menu-card" style="border-color:${ic?'var(--ac)':'var(--bd)'}">
+      <div class="menu-card-top" onclick="showDet('${name}')">
+        <div class="menu-card-name">${name}${hm?' 🥩':''}${lowIngrs?' ⚠️':''}</div>
+        <div class="menu-card-sub">${r.chapter}</div>
+      </div>
+      <div class="menu-card-bottom">
+        <span class="ch-label" style="background:${col}20;color:${col}">${r.chapter.substring(0,3)}</span>
+        <button class="acb ${ic?'ic':'nc'}" onclick="event.stopPropagation();toggleCart('${name}')">${ic?'✓':'+'}</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Ingredient list ──
+function renderIL(q,el){
+  if(!q){el.innerHTML='<div style="text-align:center;color:var(--mu);padding:40px">재료명을 입력하세요</div>';return;}
+  const hits={};
+  Object.entries(recipes).forEach(([mn,r])=>{
+    r.ingredients.forEach(ing=>{
+      if(ing.name.toLowerCase().includes(q)){
+        if(!hits[ing.name])hits[ing.name]={category:ing.category,menus:[]};
+        if(!hits[ing.name].menus.includes(mn))hits[ing.name].menus.push(mn);
+      }
+    });
+  });
+  if(!Object.keys(hits).length){el.innerHTML='<div style="text-align:center;color:var(--mu);padding:30px">검색 결과 없음</div>';return;}
+  el.innerHTML=Object.entries(hits).map(([ingr,info])=>{
+    const g=MG[ingr];
+    return`<div class="ih"><div class="ihh"><div class="ihn">${ingr} <span style="font-size:11px;color:var(--mu)">${info.category}</span></div>${g?`<div class="ihg">🏪 ${g.au}</div>`:''}</div><div class="im">${info.menus.map(mn=>{const r=recipes[mn];const col=CHC[r?.chapter]||'#555';const ic=cart.some(c=>c.name===mn);return`<div class="imr"><div class="imrn" onclick="showDet('${mn}')">${mn}</div><div class="imrc">${r?.chapter||''}</div><button class="acb ${ic?'ic':'nc'}" onclick="toggleCart('${mn}')" style="width:28px;height:28px;font-size:15px">${ic?'✓':'+'}</button></div>`;}).join('')}</div></div>`;
+  }).join('');
+}
+
+// ══ CART ═══════════════════════════════════════════════════
+function toggleCart(name){
+  const idx=cart.findIndex(c=>c.name===name);
+  if(idx>=0){cart.splice(idx,1);delete weekAssign[name];}
+  else{cart.push({name,chapter:recipes[name]?.chapter||''});}
+  updateBadge(); renderPL();
+  if(document.getElementById('sc-cart').classList.contains('active')) renderCart();
+}
+
+function updateBadge(){
+  const n=cart.length;
+  const b=document.getElementById('cbdg');
+  b.textContent=n; b.style.display=n?'inline':'none';
+  document.getElementById('cfc').textContent=n;
+  const isCart=document.getElementById('sc-cart').classList.contains('active');
+  document.getElementById('cf').classList.toggle('hd',n===0||isCart);
+}
+
+function renderCart(){
+  updateBadge();
+  document.getElementById('cf').classList.add('hd');
+  const ce=document.getElementById('ce');
+  ce.style.display=cart.length?'none':'block';
+  // Week row
+  document.getElementById('wr').innerHTML=DAYS.map((d,i)=>{
+    const menu=Object.entries(weekAssign).find(([,day])=>day===i)?.[0];
+    return`<div class="wd ${menu?'has':''}"><div class="wdl">${d}</div><div class="wdm">${menu?menu.substring(0,5):''}</div></div>`;
+  }).join('');
+  // Steps
+  const asgd=Object.keys(weekAssign).length;
+  if(asgd>0){document.getElementById('sn2').style.cssText='background:var(--ac);color:#fff';document.getElementById('sl2').style.color='var(--ac)';document.getElementById('sl1').classList.add('dn');}
+  if(asgd===cart.length&&cart.length>0){document.getElementById('sn3').style.cssText='background:var(--gr);color:#000';document.getElementById('sl3').style.color='var(--gr)';document.getElementById('sl2l').classList.add('dn');}
+  const total=cart.length,left=total-asgd;
+  document.getElementById('cst').textContent=total===0?'메뉴를 담아주세요':left>0?`${total}개 담음 · ${left}개 요일 미배정 (요일 배정은 선택사항)`:' 배정 완료! 장보기 목록을 만들어보세요';
+  const rows=cart.map(c=>{
+    const day=weekAssign[c.name];const a=day!==undefined;const col=CHC[c.chapter]||'#555';
+    return`<div class="ci ${a?'asgd':''}"><div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div><div class="cib"><div class="cin">${c.name}</div><div class="cic">${c.chapter}</div>${a?`<div class="cid">📅 ${DAYS[day]}요일</div>`:''}</div><button class="ab ${a?'asgd':''}" onclick="openDP('${c.name}')">${a?DAYS[day]+'요일 ✓':'요일 배정'}</button><button class="rb" onclick="toggleCart('${c.name}')">✕</button></div>`;
+  }).join('');
+  document.getElementById('cb2').innerHTML=`<div id="ce" style="display:${cart.length?'none':'block'};text-align:center;color:var(--mu);padding:40px 20px"><div style="font-size:40px;margin-bottom:12px">🛒</div>아직 담은 메뉴가 없어요</div>${rows}`;
+  document.getElementById('gsbt').disabled=cart.length===0;
+}
+
+function openDP(name){
+  pendingMenu=name;
+  document.getElementById('dpt').textContent=`"${name}" 요일 선택`;
+  document.getElementById('dg').innerHTML=DAYS.map((d,i)=>{
+    const tk=Object.entries(weekAssign).some(([m,day])=>day===i&&m!==name);
+    return`<button class="dpb ${tk?'tk':''}" onclick="assignDay(${i})" ${tk?'disabled':''}>${d}</button>`;
+  }).join('');
+  document.getElementById('dp').classList.add('show');
+}
+function assignDay(i){if(!pendingMenu)return;Object.entries(weekAssign).forEach(([m,day])=>{if(day===i)delete weekAssign[m];});weekAssign[pendingMenu]=i;pendingMenu=null;closeDPicker();renderCart();}
+function closeDPicker(e){if(!e||e.target===document.getElementById('dp')){document.getElementById('dp').classList.remove('show');pendingMenu=null;}}
+
+// ══ SHOPPING ════════════════════════════════════════════════
+function genShop(){
+  // Build items from cart
+  const items={};
+  cart.forEach(c=>{
+    recipes[c.name]?.ingredients.forEach(ing=>{
+      if(!items[ing.name])items[ing.name]={category:ing.category,menus:[],amount:ing.amount};
+      if(!items[ing.name].menus.includes(c.name))items[ing.name].menus.push(c.name);
+    });
+  });
+
+  // Fridge exclusion: pre-check items where stock >= 2 (sufficient)
+  Object.keys(items).forEach(name=>{
+    if(fridgeStock[name]>=2) excludeFromShop[name]=true;
+  });
+
+  // Render
+  renderShopList(items);
+  document.getElementById('se').style.display='none';
+  // Switch to shop
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sc-shop').classList.add('active');
+  document.querySelectorAll('.nb')[2].classList.add('active');
+}
+
+function renderShopList(items){
+  // Sort categories
+  const bycat={};
+  Object.entries(items).forEach(([n,i])=>{
+    const cat=i.category;
+    if(!bycat[cat])bycat[cat]=[];
+    bycat[cat].push({name:n,...i});
+  });
+
+  // Merge 달걀류 into 유제품 for display
+  if(bycat['달걀류']){
+    if(!bycat['유제품'])bycat['유제품']=[];
+    bycat['유제품'].push(...bycat['달걀류']);
+    delete bycat['달걀류'];
+  }
+
+  // Count totals
+  let totalItems=0, checkedItems=0, excludedItems=0;
+  Object.values(items).forEach(i=>{totalItems++;if(shopChecked[i.name||Object.keys(items).find(k=>items[k]===i)])checkedItems++;});
+
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:18px;font-weight:900">🛍 장보기 목록</div>
+    <div style="font-size:12px;color:var(--mu)">${cart.length}개 메뉴</div>
+  </div>
+  <div style="background:var(--sf2);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--mu)">
+    ✅ = 마트에서 구매 완료시 체크 · 🧊 = 냉장고 재고 있어서 제외됨
+  </div>`;
+
+  // Fridge exclusion section (if any)
+  const fridgeExcluded=Object.keys(items).filter(n=>excludeFromShop[n]);
+  if(fridgeExcluded.length){
+    html+=`<div style="background:#06d6a015;border:1px solid var(--gr)30;border-radius:10px;padding:10px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--gr);margin-bottom:6px">🧊 냉장고 재고로 제외됨 (${fridgeExcluded.length}개)</div>
+      <div style="font-size:12px;color:var(--mu)">${fridgeExcluded.join(' · ')}</div>
+      <button onclick="clearExcludes()" style="margin-top:8px;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--mu);font-size:11px;padding:3px 8px;cursor:pointer;font-family:var(--fn)">전부 다시 추가</button>
+    </div>`;
+  }
+
+  const customOrder=['채소류','유제품','두부/콩류','육류','해산물','해조류','곡물류','면류','발효식품','양념/소스류','조미료/오일류','가공식품','주류','물/육수','기타'];
+  customOrder.forEach(cat=>{
+    const arr=bycat[cat]; if(!arr) return;
+    // Filter out excluded
+    const visible=arr.filter(item=>!excludeFromShop[item.name]);
+    if(!visible.length) return;
+    html+=`<div class="sct">${cat}</div>`;
+    visible.forEach(item=>{
+      const g=MG[item.name];
+      const dn=shopChecked[item.name];
+      const lv=fridgeStock[item.name];
+      const lvLabel=lv===1?'<span style="font-size:10px;color:#ff6b6b;margin-left:4px">⚠️재고부족</span>':lv>=2?'<span style="font-size:10px;color:var(--gr);margin-left:4px">🧊보통이상</span>':'';
+      html+=`<div class="si">
+        <div class="ck ${dn?'dn':''}" onclick="tShop('${item.name}',${JSON.stringify(items)})">
+          ${dn?'✓':''}
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+            <span class="sn ${dn?'dn':''}">${item.name}</span>
+            ${g?`<span style="font-size:11px;color:var(--ac2)">${g.au}</span>`:''}
+            ${lvLabel}
+          </div>
+          ${g?`<div style="font-size:10px;color:var(--mu)">${g.st}</div>`:''}
+          <div class="sm">${item.menus.join(', ')}</div>
+        </div>
+        <button onclick="toggleExclude('${item.name}',${JSON.stringify(items)})" style="background:none;border:1px solid var(--bd);border-radius:6px;color:var(--mu);font-size:10px;padding:3px 6px;cursor:pointer;font-family:var(--fn);margin-left:6px;flex-shrink:0">제외</button>
+      </div>`;
+    });
+  });
+
+  // Pantry/water collapsed
+  const pantryItems=Object.entries(items).filter(([n,i])=>['물/육수','기타'].includes(i.category)&&!excludeFromShop[n]);
+  if(pantryItems.length){
+    html+=`<div class="sct" onclick="tPantry()" style="cursor:pointer">기본 조미료 / 물 <span id="pa">▼</span></div><div id="psec" style="display:none">`;
+    pantryItems.forEach(([name,info])=>{
+      const dn=shopChecked[name];
+      html+=`<div class="si"><div class="ck ${dn?'dn':''}" onclick="tShop2('${name}')">${dn?'✓':''}</div><div style="flex:1"><div class="sn ${dn?'dn':''}">${name}</div></div></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Complete button
+  html+=`<div style="margin-top:24px;padding-bottom:20px">
+    <button class="btn btng" onclick="completeShop(${JSON.stringify(items)})">🎉 장보기 완료!</button>
+    <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:-4px">완료하면 날짜별 이력으로 저장돼요</div>
+  </div>`;
+
+  document.getElementById('sl-list').innerHTML=html;
+  // store current items for toggle
+  window._currentShopItems=items;
+}
+
+function tShop(name, items){shopChecked[name]=!shopChecked[name];renderShopList(items||window._currentShopItems||{});}
+function tShop2(name){shopChecked[name]=!shopChecked[name];renderShopList(window._currentShopItems||{});}
+function toggleExclude(name, items){excludeFromShop[name]=!excludeFromShop[name];renderShopList(items||window._currentShopItems||{});}
+function clearExcludes(){excludeFromShop={};renderShopList(window._currentShopItems||{});}
+function tPantry(){const s=document.getElementById('psec');const a=document.getElementById('pa');s.style.display=s.style.display==='none'?'block':'none';a.textContent=s.style.display==='none'?'▼':'▲';}
+
+// ══ COMPLETE SHOP ══════════════════════════════════════════
+function completeShop(items){
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
+  const timeStr=now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  
+  // Save to history
+  const purchased=Object.keys(items).filter(n=>!excludeFromShop[n]);
+  const record={
+    date: now.toISOString(),
+    dateStr,
+    menus: cart.map(c=>c.name),
+    items: purchased,
+    checkedCount: Object.keys(shopChecked).filter(k=>shopChecked[k]).length,
+    totalCount: purchased.length
+  };
+  shopHistory.unshift(record);
+  localStorage.setItem('shop_history', JSON.stringify(shopHistory.slice(0,50)));
+
+  // Update fridge stock: add purchased items (IN)
+  purchased.forEach(name=>{
+    if(shopChecked[name]){
+      // bought = increase stock
+      fridgeStock[name]=Math.min(3,(fridgeStock[name]||0)+1);
+    }
+  });
+  saveFridge();
+
+  // Show finish screen
+  document.getElementById('finish-date-text').textContent=`${dateStr} ${timeStr}`;
+  document.getElementById('finish-screen').classList.add('show');
+}
+
+function closeFinish(){
+  document.getElementById('finish-screen').classList.remove('show');
+  goSC('pick', document.querySelectorAll('.nb')[0]);
+}
+
+function resetAll(){
+  cart=[];weekAssign={};shopChecked={};excludeFromShop={};
+  document.getElementById('sl-list').innerHTML='';
+  document.getElementById('se').style.display='block';
+  document.getElementById('finish-screen').classList.remove('show');
+  updateBadge();
+  goSC('pick', document.querySelectorAll('.nb')[0]);
+}
+
+// ══ HISTORY ═══════════════════════════════════════════════
+function renderHistory(){
+  const el=document.getElementById('hist-list');
+  if(!shopHistory.length){el.innerHTML='<div style="text-align:center;color:var(--mu);padding:40px">아직 장보기 이력이 없어요</div>';return;}
+  el.innerHTML=shopHistory.map((h,i)=>`
+    <div class="hist-item">
+      <div class="hist-date">📅 ${h.dateStr}</div>
+      <div class="hist-menus">${h.menus.join(' · ')}</div>
+      <div class="hist-count" style="margin-top:6px;color:var(--gr)">구매 ${h.checkedCount}/${h.totalCount}개 완료</div>
+    </div>`).join('');
+}
+
+// ══ DETAIL OVERLAY ════════════════════════════════════════
+function showDet(name){
+  const r=recipes[name];if(!r)return;
+  const col=CHC[r.chapter]||'#555';
+  const mi=r.ingredients.filter(i=>i.category==='육류');
+  let mh='';
+  if(mi.length){
+    mi.forEach(i=>{const g=MG[i.name];if(g)mh+=`<div class="movr"><div><div style="font-size:13px;font-weight:700">${i.name}</div><div style="font-size:12px;color:var(--ac2)">${g.au}</div></div><div style="font-size:10px;color:var(--mu);text-align:right">${g.st}</div></div>`;});
+    if(mh)mh=`<div style="font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px">🥩 호주 마트 부위명</div>${mh}`;
+  }
+  const ic=cart.some(c=>c.name===name);
+  document.getElementById('ovc').innerHTML=`<div class="ovt">${name}</div><div class="ovch" style="color:${col}">${r.chapter}</div><div style="font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">재료</div>${r.ingredients.map(i=>`<div class="ovr"><div><span class="ovi">${i.name}</span> <span class="ovc3">${i.category}</span></div><div class="ova">${i.amount||'-'}</div></div>`).join('')}${mh}<div class="ovbs"><button class="ovb" style="background:var(--sf2);color:var(--tx)" onclick="closeOV()">닫기</button><button class="ovb" style="background:${ic?'var(--bd)':'var(--ac)'};color:${ic?'var(--mu)':'#fff'}" onclick="toggleCart('${name}');closeOV()">${ic?'담기 취소':'🛒 메뉴에 담기'}</button></div>`;
+  document.getElementById('ov').classList.add('show');
+}
+function closeOV(e){if(!e||e.target===document.getElementById('ov'))document.getElementById('ov').classList.remove('show');}
+
+// ══ MORE TABS ══════════════════════════════════════════════
+function setMT(id,btn){
+  document.querySelectorAll('.mt').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ms').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ms-'+id).classList.add('active');
+  if(id==='history') renderHistory();
+}
+
+// ══ FRIDGE ════════════════════════════════════════════════
+function saveKey(){apiKey=document.getElementById('aki').value.trim();localStorage.setItem('ck_api',apiKey);alert('저장됐습니다 ✓');}
+
+async function scanFridge(event){
+  const file=event.target.files[0];if(!file)return;
+  if(!apiKey){alert('먼저 설정 탭에서 API 키를 입력해주세요');return;}
+  document.getElementById('fscn').style.display='block';
+  const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'이 냉장고/팬트리 사진의 식재료를 파악하고 재고 수준(1=거의없음,2=보통,3=충분)을 JSON으로만 응답하세요. 예: {"계란":2,"대파":1}'}]}]})});
+    const data=await resp.json();
+    const parsed=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    fridgeStock={...fridgeStock,...parsed};
+    saveFridge();
+    renderFS();
+  }catch(e){alert('분석 실패: '+e.message);}
+  finally{document.getElementById('fscn').style.display='none';}
+}
+
+function renderFS(){
+  const el=document.getElementById('fstk');
+  if(!Object.keys(fridgeStock).length)return;
+  const sorted=Object.entries(fridgeStock).sort((a,b)=>a[1]-b[1]);
+  el.innerHTML='<div style="font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;margin:14px 0 8px">재고 현황 (탭하면 수동조정)</div>'+
+    sorted.map(([name,lv])=>{
+      const pct=lv===1?18:lv===2?55:90;
+      const col=lv===1?'#ff4444':lv===2?'#ffd166':'#06d6a0';
+      return`<div class="sr">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:${lv===1?700:400};color:${lv===1?'#ff6b6b':'var(--tx)'}">${name} ${lv===1?'⚠️':''}</div>
+          <div class="sbar"><div class="sfill" style="width:${pct}%;background:${col}"></div></div>
+        </div>
+        <div style="display:flex;gap:4px;margin-left:10px">
+          <button onclick="adjStock('${name}',-1)" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);cursor:pointer;font-family:var(--fn)">−</button>
+          <span style="font-size:12px;color:var(--mu);width:28px;text-align:center;line-height:24px">${lv===1?'부족':lv===2?'보통':'충분'}</span>
+          <button onclick="adjStock('${name}',1)" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);cursor:pointer;font-family:var(--fn)">＋</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function adjStock(name,delta){
+  fridgeStock[name]=Math.max(0,Math.min(3,(fridgeStock[name]||0)+delta));
+  if(fridgeStock[name]===0) delete fridgeStock[name];
+  saveFridge(); renderFS();
+}
+
+// ══ ADD RECIPE ════════════════════════════════════════════
+async function extractYT(){
+  const url=document.getElementById('ytu').value.trim();
+  if(!url){alert('URL을 입력해주세요');return;}
+  if(!apiKey){alert('설정 탭에서 API 키를 먼저 입력해주세요');return;}
+  const box=document.getElementById('ytb');
+  box.className='ytb show';
+  box.innerHTML='<div style="text-align:center"><div class="dots"><span></span><span></span><span></span></div><div style="margin-top:8px;font-size:13px;color:var(--mu)">분석 중...</div></div>';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:`이 유튜브 URL의 요리 레시피를 웹에서 찾아 JSON으로만 응답: ${url}\n{"menu_name":"","chapter":"밥/전구이/메인-육류/메인-기타/면파스타/떡볶이/국탕찌개/간식/죽수프/기타","ingredients":[{"name":"","amount":""}]}`}]})});
+    const data=await resp.json();
+    const txt=data.content.find(c=>c.type==='text')?.text||'';
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    if(parsed.error)throw new Error(parsed.error);
+    box.innerHTML=`<div style="color:var(--gr);font-weight:700;margin-bottom:8px">✅ ${parsed.menu_name} (${parsed.ingredients.length}개 재료)</div>${parsed.ingredients.slice(0,4).map(i=>`<div style="font-size:12px">${i.name} <span style="color:var(--ac2)">${i.amount}</span></div>`).join('')}${parsed.ingredients.length>4?`<div style="font-size:11px;color:var(--mu)">외 ${parsed.ingredients.length-4}개</div>`:''}<button class="btn btnp" style="margin-top:10px" onclick='addYT(${JSON.stringify(parsed).replace(/'/g,"&#39;")})'>추가하기</button>`;
+  }catch(e){box.innerHTML=`<div style="color:#ff6b6b">${e.message}</div>`;}
+}
+
+function addYT(data){
+  recipes[data.menu_name]={chapter:data.chapter,ingredients:data.ingredients.map(i=>({...i,category:'기타'}))};
+  saveExtras(); alert(`"${data.menu_name}" 추가 완료`);
+  document.getElementById('ytb').className='ytb';
+  document.getElementById('ytu').value=''; renderPL();
+}
+
+function addRecipe(){
+  const name=document.getElementById('nn').value.trim();
+  const ch=document.getElementById('nch').value;
+  const raw=document.getElementById('ni').value.trim();
+  if(!name||!raw){alert('메뉴명과 재료를 입력해주세요');return;}
+  const ingrs=raw.split('\n').filter(l=>l.trim()).map(line=>{const p=line.trim().split(/\s+/);return{name:p[0],amount:p.slice(1).join(' '),category:'기타'};});
+  recipes[name]={chapter:ch,ingredients:ingrs};
+  saveExtras(); alert(`"${name}" 추가 완료`);
+  document.getElementById('nn').value=''; document.getElementById('ni').value=''; renderPL();
+}
+
+// ══ EXCEL DOWNLOAD ════════════════════════════════════════
+function downloadExcel(){
+  // Build CSV (Excel compatible)
+  const rows=[['메뉴명','챕터','재료명','카테고리','계량']];
+  Object.entries(recipes).forEach(([name,r])=>{
+    r.ingredients.forEach(ing=>{
+      rows.push([name,r.chapter,ing.name,ing.category,ing.amount||'']);
+    });
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`어떻게든해먹는다_레시피_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ══ INIT ══════════════════════════════════════════════════
+renderCH(); renderPL(); renderFS();
+if(apiKey) document.getElementById('aki').value=apiKey;
+</script>
+</body>
+</html>
