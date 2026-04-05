@@ -608,7 +608,7 @@ function renderShopList(items){
       const lv=fridgeStock[item.name];
       const lvLabel=lv===1?'<span style="font-size:10px;color:#ff6b6b;margin-left:4px">⚠️재고부족</span>':lv>=2?'<span style="font-size:10px;color:var(--gr);margin-left:4px">🧊보통이상</span>':'';
       html+=`<div class="si">
-        <div class="ck ${dn?'dn':''}" onclick="tShop('${item.name}',${JSON.stringify(items)})">
+        <div class="ck ${dn?'dn':''}" data-action="check" data-name="${encodeURIComponent(item.name)}" style="min-width:22px;min-height:44px;align-items:center;justify-content:center;display:flex">
           ${dn?'✓':''}
         </div>
         <div style="flex:1">
@@ -620,7 +620,7 @@ function renderShopList(items){
           ${g?`<div style="font-size:10px;color:var(--mu)">${g.st}</div>`:''}
           <div class="sm">${item.menus.join(', ')}</div>
         </div>
-        <button onclick="toggleExclude('${item.name}',${JSON.stringify(items)})" style="background:none;border:1px solid var(--bd);border-radius:6px;color:var(--mu);font-size:10px;padding:3px 6px;cursor:pointer;font-family:var(--fn);margin-left:6px;flex-shrink:0">제외</button>
+        <button data-action="exclude" data-name="${encodeURIComponent(item.name)}" style="background:none;border:1px solid var(--bd);border-radius:6px;color:var(--mu);font-size:10px;padding:6px 10px;cursor:pointer;font-family:var(--fn);margin-left:6px;flex-shrink:0;min-height:40px">제외</button>
       </div>`;
     });
   });
@@ -631,14 +631,14 @@ function renderShopList(items){
     html+=`<div class="sct" onclick="tPantry()" style="cursor:pointer">기본 조미료 / 물 <span id="pa">▼</span></div><div id="psec" style="display:none">`;
     pantryItems.forEach(([name,info])=>{
       const dn=shopChecked[name];
-      html+=`<div class="si"><div class="ck ${dn?'dn':''}" onclick="tShop2('${name}')">${dn?'✓':''}</div><div style="flex:1"><div class="sn ${dn?'dn':''}">${name}</div></div></div>`;
+      html+=`<div class="si"><div class="ck ${dn?'dn':''}" data-action="check" data-name="${encodeURIComponent(name)}" style="min-width:22px;min-height:44px;display:flex;align-items:center;justify-content:center">${dn?'✓':''}</div><div style="flex:1"><div class="sn ${dn?'dn':''}">${name}</div></div></div>`;
     });
     html+=`</div>`;
   }
 
   // Complete button
   html+=`<div style="margin-top:24px;padding-bottom:20px">
-    <button class="btn btng" onclick="completeShop(${JSON.stringify(items)})">🎉 장보기 완료!</button>
+    <button class="btn btng" id="complete-shop-btn">🎉 장보기 완료!</button>
     <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:-4px">완료하면 날짜별 이력으로 저장돼요</div>
   </div>`;
 
@@ -647,14 +647,30 @@ function renderShopList(items){
   window._currentShopItems=items;
 }
 
-function tShop(name, items){shopChecked[name]=!shopChecked[name];renderShopList(items||window._currentShopItems||{});}
-function tShop2(name){shopChecked[name]=!shopChecked[name];renderShopList(window._currentShopItems||{});}
-function toggleExclude(name, items){excludeFromShop[name]=!excludeFromShop[name];renderShopList(items||window._currentShopItems||{});}
+function tShop(name){shopChecked[name]=!shopChecked[name];renderShopList(window._currentShopItems||{});}
+function toggleExclude(name){excludeFromShop[name]=!excludeFromShop[name];renderShopList(window._currentShopItems||{});}
 function clearExcludes(){excludeFromShop={};renderShopList(window._currentShopItems||{});}
+
+// Event delegation for shop list - handles touch properly
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('sl-list').addEventListener('click', function(e){
+    const ck = e.target.closest('[data-action]');
+    if(!ck) return;
+    const name = decodeURIComponent(ck.dataset.name);
+    const action = ck.dataset.action;
+    if(action==='check') tShop(name);
+    else if(action==='exclude') toggleExclude(name);
+  });
+  document.getElementById('sl-list').addEventListener('click', function(e){
+    const btn = e.target.closest('#complete-shop-btn');
+    if(btn) completeShop(window._currentShopItems||{});
+  });
+});
 function tPantry(){const s=document.getElementById('psec');const a=document.getElementById('pa');s.style.display=s.style.display==='none'?'block':'none';a.textContent=s.style.display==='none'?'▼':'▲';}
 
 // ══ COMPLETE SHOP ══════════════════════════════════════════
 function completeShop(items){
+  if(!items||!Object.keys(items).length) items=window._currentShopItems||{};
   const now=new Date();
   const dateStr=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
   const timeStr=now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
